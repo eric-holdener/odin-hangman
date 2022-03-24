@@ -126,16 +126,14 @@ class Game
   end
 
   def play_game
-    # draw board
-    draw_game_board
-    # draw ____ of letters for random word
-    draw_word_hint
-    # list guessed letters
-    display_incorrect_guesses
-    get_guess
-    check_guess
-    @round_incrementer += 1
-    check_conditions
+    if @round_incrementer == 0
+      draw_game_board
+      draw_word_hint
+      display_incorrect_guesses
+      get_guess
+      check_guess
+      @round_incrementer += 1
+      check_conditions
   end
 
   def check_conditions
@@ -150,15 +148,58 @@ class Game
     end
   end
 
-  def save_game
-
+  def save_or_play
+    puts 'Would you like to:'
+    puts '1: Save'
+    puts '2: Continue Playing'
+    player_choice = gets.chomp
+    case player_choice
+    when '1'
+      save_game
+    when '2'
+      play_game
+    else
+      puts 'Please enter a valid command'
+      save_or_play
+    end
   end
 
-  def testing
-    play_game
+  def save_game
+     if Dir.exist?('savegames')
+      # print files in directory, choose to overwrite or make a new file
+     else
+      Dir.mkdir('savegames')
+      # save the file
+    end
+  end
+
+  def load_game
+    if Dir.exist?('savegames')
+      puts 'What game would you like to load?'
+      # list all files with selector number
+    else
+      puts 'It seems like there are no save games. Starting a new game for you.'
+      play_game
+    end
+  end
+
+  def initialize_game
+    puts 'Would you like to:'
+    puts '1: Play a new game'
+    puts '2: Load a previous save'
+    player_choice = gets.chomp
+    case player_choice
+    when '1'
+      play_game
+    when '2'
+      load_game
+    else
+      puts 'Please enter a valid command.'
+      initialize_game
+    end
   end
 end
 
 csv = 'hangman_words.csv'
 hangman_game = Game.new(csv)
-hangman_game.testing
+hangman_game.initialize_game
