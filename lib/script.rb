@@ -1,10 +1,10 @@
 require 'csv'
+require 'json'
 require 'pry-byebug'
 
 class Game
   def initialize(csv)
-    @word_list = CSV.read(csv)
-    @hangman_word = random_word_selector
+    @hangman_word = random_word_selector(CSV.read(csv))
     @incorrect_guesses = 0
     @incorrect_letters = []
     @display_word = initalize_display_word
@@ -12,9 +12,9 @@ class Game
     @round_incrementer = 0
   end
 
-  def random_word_selector
+  def random_word_selector(csv)
     word_array = []
-    @word_list.each do |word|
+    csv.each do |word|
       word = word.join()
       if word.length >= 5 && word.length <= 12
         word_array.push(word)
@@ -117,7 +117,7 @@ class Game
   # gets the letter guess from the player, assigns it to guess letter
   def get_guess
     puts "Guess a letter!"
-    @guess_letter = gets.chomp
+    @guess_letter = gets.chomp.downcase
   end
 
   def display_incorrect_guesses
@@ -134,6 +134,14 @@ class Game
       check_guess
       @round_incrementer += 1
       check_conditions
+    else
+      draw_game_board
+      draw_word_hint
+      display_incorrect_guesses
+      get_guess
+      check_guess
+      check_conditions
+    end
   end
 
   def check_conditions
@@ -165,18 +173,66 @@ class Game
   end
 
   def save_game
-     if Dir.exist?('savegames')
+    folder = 'savegames'
+    if Dir.exist?(folder)
       # print files in directory, choose to overwrite or make a new file
-     else
-      Dir.mkdir('savegames')
-      # save the file
+      saves_array = Dir.entries(folder).sort[2..]
+      saves_hash = {}
+      saves_array.each_with_index do |filename, idx|
+        saves_hash[idx] = filename
+      end
+      saves_hash[saves_hash.length] = 'New Save'
+      puts 'Please select which save to overwrite / or new save.'
+      saves_hash.each do |key, value|
+        puts "#{key}: #{value}"
+      end
+      selection = gets.chomp
+      if selection == saves_hash.length.to_s
+        filename = "#{folder}/save_#{saves_hash.length}.json"
+        contents = to_json
+        File.open(filename, 'w') do |file|
+          file.puts contents
+        end
+      elsif selection.to_i > saves_hash.length
+        puts 'That doesn\'t seem to be a file!'
+        save_game
+      else
+        filename = "#{folder}/save_#{selection}.json"
+        contents = to_json
+        File.open(filename, 'w') do |file|
+          file.puts contents
+        end
+      end
+    else
+      Dir.mkdir(folder)
+      filename = "#{folder}/save_0.json"
+      contents = to_json
+      File.open(filename, 'w') do |file|
+        file.puts contents
+      end
     end
   end
 
   def load_game
-    if Dir.exist?('savegames')
+    folder = 'savegames'
+    if Dir.exist?(folder)
+      binding.pry
       puts 'What game would you like to load?'
-      # list all files with selector number
+      saves_array = Dir.entries(folder).sort[2..]
+      saves_hash = {}
+      saves_array.each_with_index do |filename, idx|
+        saves_hash[idx] = filename
+      end
+      saves_hash.each do |key, value|
+        puts "#{key}: #{value}"
+      end
+      selection = gets.chomp
+      if selection.to_i >= saves_hash.length
+        puts 'That doesn\'t seem to be a file!'
+      else
+        from_json!(File.read("#{folder}/save_#{selection}.json"))
+        play_game
+      end
     else
       puts 'It seems like there are no save games. Starting a new game for you.'
       play_game
@@ -198,8 +254,26 @@ class Game
       initialize_game
     end
   end
+
+  def to_json
+    hash = {}
+    self.instance_variables.each do |var|
+      hash[var] = self.instance_variable_get var
+    end
+    hash.to_json
+  end
+
+  def from_json!(string)
+    JSON.parse(string).each do |var, val|
+      self.instance_variable_set var, val
+    end
+  end
+
+  def test
+    load_game
+  end
 end
 
 csv = 'hangman_words.csv'
 hangman_game = Game.new(csv)
-hangman_game.initialize_game
+hangman_game.test
