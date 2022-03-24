@@ -9,6 +9,7 @@ class Game
     @incorrect_letters = []
     @display_word = initalize_display_word
     @guess_letter = ''
+    @round_incrementer = 0
   end
 
   def random_word_selector
@@ -82,8 +83,6 @@ class Game
   # joins display word into a display string
   # outputs display string to terminal
   def draw_word_hint
-    check_guess
-    puts "display word = #{@display_word}"
     display = @display_word.join()
     puts display
   end
@@ -103,9 +102,7 @@ class Game
   # else increment incorrect guesses and add letter to incorrect letters
   def check_guess
     valid_letters = @hangman_word.split("")
-    puts "Valid letters = #{valid_letters}"
     if valid_letters.include? @guess_letter
-      puts "Valid letters includes guess letter"
       valid_letters.each_with_index do |letter, idx|
         if @guess_letter == letter
           @display_word[idx] = @guess_letter
@@ -121,8 +118,6 @@ class Game
   def get_guess
     puts "Guess a letter!"
     @guess_letter = gets.chomp
-    puts "Guess letter = "
-    p "#{@guess_letter}"
   end
 
   def display_incorrect_guesses
@@ -138,14 +133,18 @@ class Game
     # list guessed letters
     display_incorrect_guesses
     get_guess
+    check_guess
+    @round_incrementer += 1
     check_conditions
   end
 
   def check_conditions
     if @display_word.join("") == @hangman_word
       puts "You win!"
+      puts "The word was #{@hangman_word}"
     elsif @incorrect_guesses == 6
       puts "You lose!"
+      puts "The word was #{@hangman_word}"
     else
       play_game
     end
