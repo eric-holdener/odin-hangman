@@ -152,7 +152,7 @@ class Game
       puts "You lose!"
       puts "The word was #{@hangman_word}"
     else
-      play_game
+      save_or_play
     end
   end
 
@@ -268,12 +268,8 @@ class Game
       self.instance_variable_set var, val
     end
   end
-
-  def test
-    load_game
-  end
 end
 
 csv = 'hangman_words.csv'
 hangman_game = Game.new(csv)
-hangman_game.test
+hangman_game.initialize_game

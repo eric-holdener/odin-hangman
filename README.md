@@ -1,1 +1,3 @@
 # odin-hangman
+
+The core functionality of the hangman game was rather easy for me to grasp and code, even if I may have used more lines than necessary to do it. Personally, what troubled me the most with this project and took the most research and learning was serailizing the class and all of its instance variables, then being able to overwrite saves, load different saves, or make new ones. I wanted to add all that potential functionality so I could really wrap my mind around how JSON and serialization works. I still have a long ways to go to full grasp serialization, but I am happy with where I have started at least. I look forward to being able to optimize this code in the future.
